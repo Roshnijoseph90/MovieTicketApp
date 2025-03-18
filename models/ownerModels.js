@@ -21,9 +21,10 @@ const ownerSchema = new mongoose.Schema({
    
   },
   
-  theaters:{
-   type:[String]
-  },
+  /*theaters: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Theater',  // Reference to the Theater model
+  }],*/
   role:{
     type:String,
     required:true,

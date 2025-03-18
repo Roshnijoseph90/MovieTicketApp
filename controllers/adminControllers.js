@@ -58,7 +58,7 @@ export const adminsignup = async (req, res, next) => {
 
 export const adminLogin= async (req, res, next) => {
   try {
-    //collect adminrdata
+    //collect admindata
     const {  email,password,confirmPassword} = req.body;
 
     if ( !email || !password || !confirmPassword) {
@@ -73,9 +73,9 @@ export const adminLogin= async (req, res, next) => {
     if(!adminExist){
       return res.status(404).json({message:"admin not found"})
     }
-    //console.log('Stored password hash:', userExist.password);
+    
     //password match compare
-    ;
+    
     const passwordMatch =  bcrypt.compareSync(password, adminExist.password);
 
     if(!passwordMatch){
@@ -88,9 +88,9 @@ export const adminLogin= async (req, res, next) => {
     }
     //generate token
     const token = generateToken(adminExist._id,adminExist.role || "admin");
-    //res.cookie("token", token)
     res.cookie("token", token)
-   delete adminExist._doc.password
+
+    delete adminExist._doc.password
     
       res.json({ data: adminExist, message: "login successful" })
     
@@ -145,16 +145,10 @@ export const checkAdmin = async (req, res, next) => {
 };
 
 
-
-
 export const deactivateAdmin = async (req, res, next) => {
   try {
     let adminId = req.params.adminId;
    
-    if (!/^[a-fA-F0-9]{24}$/.test(adminId)) {
-      return res.status(400).json({ message: "Invalid owner ID format" });
-    }
-
     const objectId = new mongoose.Types.ObjectId(adminId);  // Convert to ObjectId
     console.log("Converted ObjectId:", objectId);
 
@@ -173,9 +167,8 @@ export const deactivateAdmin = async (req, res, next) => {
 };
 export const deleteAdmin= async (req, res, next) => {
   try {
-    console.log('Authenticated Admin:', req.admin); 
-
-    if (!req.admin) {
+    
+  if (!req.admin) {
       return res.status(401).json({ message: 'admin is not authenticated' });
     }
     const adminId = req.admin.id;
@@ -185,7 +178,7 @@ export const deleteAdmin= async (req, res, next) => {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    res.json({ message: "Account deleted successfully" });
+    res.json({ data:admin,message: "Account deleted successfully" });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Internal server error' });
     console.log(error);
@@ -215,8 +208,7 @@ export const forgetPassword = async (req, res, next) => {
     const updatedAdmin = await Admin.findOne({ email: admin.email });
    console.log("Updated admin after saving:", updatedAdmin);
 
-    // Send the reset token in the response (you can also return a message for the user to manually call the reset API)
-    res.json({ 
+     res.json({ 
       message: "Password reset request received",
       resetToken: resetToken, // Return the token directly
     });

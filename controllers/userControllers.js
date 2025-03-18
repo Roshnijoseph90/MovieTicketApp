@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token.js';
 import {User} from '../models/userModel.js'
 import crypto from 'crypto'
-//import nodemailer from nodemailer
+
 
 import mongoose from 'mongoose';  
 export const usersignup = async (req, res, next) => {
@@ -108,7 +108,7 @@ export const userProfile = async (req, res, next) => {
      //userId
      const userId = req.user.id;
      console.log('userId:', userId);
-     const userData = await User.findById(userId)
+     const userData = await User.findById(userId).select("-password")
      res.json({data:userData,message:"user profile fetched"})
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Internal server error' });
@@ -156,13 +156,12 @@ export const checkUser = async (req, res, next) => {
 export const deactivateUser = async (req, res, next) => {
   try {
     let userId = req.params.userId;
-   console.log("Received userId:", userId);  // Log the received userId
-    console.log("UserId type:", typeof userId);  // Log the type of the userId
+  
     
     // Check if the userId is a valid 24-character hexadecimal string
-    if (!/^[a-fA-F0-9]{24}$/.test(userId)) {
+    /*if (!/^[a-fA-F0-9]{24}$/.test(userId)) {
       return res.status(400).json({ message: "Invalid user ID format" });
-    }
+    }*/
 
     const objectId = new mongoose.Types.ObjectId(userId);  // Convert to ObjectId
     console.log("Converted ObjectId:", objectId)
@@ -174,7 +173,7 @@ export const deactivateUser = async (req, res, next) => {
 
     user.isActive = false;
     await user.save();
-    res.json({ message: "User account deactivated successfully" });
+    res.json({ data:user,message: "User account deactivated successfully" });
   } catch (error) {
     console.log(error);
     res.status(error.statusCode || 500).json({ message: error.message || 'Internal server error' });

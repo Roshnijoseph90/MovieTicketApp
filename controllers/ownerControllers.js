@@ -1,15 +1,13 @@
+
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token.js';
 import {Owner} from '../models/ownerModels.js'
-//import nodemailer from nodemailer
-import crypto from 'crypto'
 import mongoose from 'mongoose';  
 
 export const ownersignup = async (req, res, next) => {
   try {
     console.log('signup hitted');
 
-    // Collect user data
     const { name, email, mobile, theaters, password, confirmPassword } = req.body;
 
     if (!name || !email || !mobile ||!theaters|| !password || !confirmPassword) {
@@ -32,23 +30,14 @@ export const ownersignup = async (req, res, next) => {
     // Hash the password
     const hashedPassword =  bcrypt.hashSync(password, 10); // Changed to async version
 
-    // Save to the database
-    const newOwner = new Owner({ name, email, mobile, password: hashedPassword });
+   const newOwner = new Owner({ name, email, mobile, password: hashedPassword });
     await newOwner.save();
 
     // Generate token using ID and role
     const token = generateToken(newOwner._id, "owner");
 
     res.cookie("token", token);  // Store token in a cookie
-
-    console.log('Token generated and sent');
-
-    
-    res.json({
-      data:  newOwner,
-     
-      message: "Signup successful"
-    });
+   res.json({data:  newOwner,message: "Signup successful"});
   
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Internal server error' });
@@ -74,9 +63,7 @@ export const ownerLogin= async (req, res, next) => {
     if(!ownerExist){
       return res.status(404).json({message:"owner not found"})
     }
-    //console.log('Stored password hash:', userExist.password);
-    //password match compare
-    ;
+    
     const passwordMatch =  bcrypt.compareSync(password, ownerExist.password);
 
     if(!passwordMatch){
@@ -147,21 +134,11 @@ export const checkOwner = async (req, res, next) => {
   }
 };
 
-
-
-
 export const deactivateOwner = async (req, res, next) => {
   try {
     let ownerId = req.params.ownerId;
-    //console.log("Received userId:", ownerId);  // Log the received userId
-    //console.log("UserId type:", typeof ownerId);  // Log the type of the userId
     
-    // Check if the userId is a valid 24-character hexadecimal string
-    if (!/^[a-fA-F0-9]{24}$/.test(ownerId)) {
-      return res.status(400).json({ message: "Invalid owner ID format" });
-    }
-
-    const objectId = new mongoose.Types.ObjectId(ownerId);  // Convert to ObjectId
+    const objectId = new mongoose.Types.ObjectId(ownerId);  
     console.log("Converted ObjectId:", objectId);
 
     const owner = await Owner.findById(objectId);
@@ -171,7 +148,7 @@ export const deactivateOwner = async (req, res, next) => {
 
     owner.isActive = false;
     await owner.save();
-    res.json({ message: "owner account deactivated successfully" });
+    res.json({data:owner, message: "owner account deactivated successfully" });
   } catch (error) {
     console.log(error);
     res.status(error.statusCode || 500).json({ message: error.message || 'Internal server error' });
@@ -179,7 +156,7 @@ export const deactivateOwner = async (req, res, next) => {
 };
 export const deleteOwner = async (req, res, next) => {
   try {
-    console.log('Authenticated owner:', req.user); // Ensure that req.user is populated
+    console.log('Authenticated owner:', req.user); 
 
     if (!req.owner) {
       return res.status(401).json({ message: 'owner is not authenticated' });
